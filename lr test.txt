@@ -2,7 +2,7 @@ Action()
 {
 double atof(const char *string); //atof函数使用前必须先声明// The function atof, as with all functions that do not return an integer, must be explicitly declared in Vugen scripts.
 
-	
+	O(∩_∩)O哈哈~
 	int i;
 	float j[10];
     long file_stream;
