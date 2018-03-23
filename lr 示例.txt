@@ -1,0 +1,134 @@
+Action()
+{
+double atof(const char *string); //atof函数使用前必须先声明// The function atof, as with all functions that do not return an integer, must be explicitly declared in Vugen scripts.
+
+	int NumRows=0; 
+	int i;
+	float j[10];
+    long file_stream;
+    char * filename="E://output.txt";
+
+       /* if(file_exists(filename))
+        {
+            remove(filename);
+        }*/
+        
+        if((file_stream=fopen(filename,"w+"))==NULL)
+        {
+           lr_error_message("cannot open %s",filename);
+           return -1;
+        }
+
+
+
+lr_db_connect("StepName=Connect", 
+
+        "ConnectionString=Provider=OraOLEDB.Oracle.1;Data Source=cpdb;Persist Security Info=True; User ID=test001;Password=test001pw", 
+
+        "ConnectionName=dbRTEST", 
+
+        "ConnectionType=TER", 
+
+LAST ); 
+
+
+
+
+	lr_start_transaction("SQL");
+
+  
+
+    NumRows = lr_db_executeSQLStatement("StepName=PerformQuery", 
+    "ConnectionName=cpdb", 
+    "SQLStatement=SELECT * FROM (select sql_fulltext,elapsed_time/1000000 as t,executions  FROM    v$sqlarea where executions>0 order by  elapsed_time/executions desc) where rownum<=10 ", 
+    "DatasetName=MyDataset", 
+    LAST ); 
+
+
+	lr_end_transaction("SQL", LR_AUTO);
+
+
+    lr_output_message("The query returned %d rows.", NumRows);
+
+    lr_db_dataset_action("StepName=PrintDataset", 
+
+        "DatasetName=MyDataset", 
+
+        "Action=PRINT", 
+
+        LAST );   
+
+
+while (i<10) {
+	   lr_db_getvalue("StepName=GetValue", 
+
+        "DatasetName=MyDataset", 
+
+        "Column=sql_fulltext", 
+
+        "Row=next",
+
+        "OutParam=MyOutputParam", 
+
+        LAST ); 
+
+
+
+	   lr_db_getvalue("StepName=GetValue", 
+
+		   "DatasetName=MyDataset", 
+
+		   "Column=t", 
+
+		   "Row=current", 
+
+		   "OutParam=MyOutputParam1", 
+
+		   LAST ); 
+
+	   lr_db_getvalue("StepName=GetValue", 
+
+			  "DatasetName=MyDataset", 
+
+			  "Column=executions", 
+
+			  "Row=current", 
+
+			  "OutParam=MyOutputParam2", 
+
+			  LAST ); 
+
+
+
+   //lr_output_message("The value is: %s,%s,%s",lr_eval_string("{MyOutputParam}"),lr_eval_string("{MyOutputParam1}),lr_eval_string("{MyOutputParam2}")); 
+   fprintf(file_stream,"the %d sql information:%s",i,lr_eval_string("{MyOutputParam}"));
+   fprintf(file_stream,"\n");
+    j[i]=atof(lr_eval_string("{MyOutputParam1}"))/atof(lr_eval_string("{MyOutputParam2}"));
+
+   fprintf(file_stream,"the %d sql avg_exctim is %.2f:the totaltime is %s,the exections is %s",i,j[i],lr_eval_string("{MyOutputParam1}"),lr_eval_string("{MyOutputParam2}"));
+   fprintf(file_stream,"\n");
+
+	i=i+1; 
+}
+
+
+    lr_db_dataset_action("StepName=PrintDataset", 
+
+        "DatasetName=MyDataset", 
+
+        "Action=REMOVE", 
+
+        LAST );   
+        if(fclose(file_stream))
+        {
+           lr_error_message("error closing file %s",filename);
+           return 0;
+        }
+ 
+
+lr_db_disconnect("StepName=Disconnect", 
+        "ConnectionName=cpdb", 
+        LAST ); 
+	return 0;
+}
+
