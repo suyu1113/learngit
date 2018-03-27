@@ -1,3 +1,4 @@
+dev utf-8
 hello my girl,Yooha
 good morning,sunny
 farewell
