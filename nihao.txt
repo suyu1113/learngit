@@ -1,4 +1,4 @@
-dev utf-8
+coding£ºutf-8
 hello my girl,Yooha
 good morning,sunny
 farewell
